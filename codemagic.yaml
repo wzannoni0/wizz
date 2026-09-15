@@ -3,7 +3,7 @@
 workflows:
   android-debug:
     name: Android Debug APK
-    instance_type: linux_x2
+    instance_type: linux
     max_build_duration: 60
     working_directory: wizz_app
     environment:
@@ -20,7 +20,7 @@ workflows:
 
   ios-simulator:
     name: iOS Simulator (no signing)
-    instance_type: mac_mini_m2
+    instance_type: mac_mini
     max_build_duration: 60
     working_directory: wizz_app
     environment:
