@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizz - Il nuovo WhatsApp con anima MSN</title>
+<style>
+  * { box-sizing: border-box; font-family: Segoe UI, Tahoma, sans-serif; }
+  body { margin:0; background: linear-gradient(135deg,#0a3d91,#00a2ff 60%,#b8e6ff); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;}
+  #app { width:100%; max-width:980px; height:92vh; background:#f2f7fb; border-radius:16px; overflow:hidden; display:flex; box-shadow:0 20px 60px rgba(0,0,0,.35); border:2px solid #fff;}
+  #sidebar { width:320px; background:linear-gradient(180deg,#eaf4ff,#cfe8ff); border-right:1px solid #9ec9f0; display:flex; flex-direction:column;}
+  #me { padding:14px; background:#fff; border-bottom:1px solid #c6def5;}
+  #me .nick { font-weight:800; font-size:18px;}
+  #me .stato { font-size:13px; color:#333; margin-top:4px;}
+  #me .musica { font-size:12px; color:#0a7d2c; margin-top:2px;}
+  #contacts { flex:1; overflow:auto; padding:8px;}
+  .contact { background:#fff; border:1px solid #c6def5; border-radius:10px; padding:10px; margin-bottom:8px; cursor:pointer; display:flex; gap:10px; align-items:center;}
+  .contact.active { outline:2px solid #00a2ff; }
+  .dot { width:12px; height:12px; border-radius:50%; flex-shrink:0;}
+  .online{background:#2ecc71;} .busy{background:#e74c3c;} .away{background:#f39c12;}
+  #chatArea { flex:1; display:flex; flex-direction:column; background:#fff url('') ;}
+  #chatHeader { padding:12px 16px; background:linear-gradient(90deg,#0a3d91,#00a2ff); color:#fff; font-weight:700; display:flex; justify-content:space-between; align-items:center;}
+  #messages { flex:1; overflow:auto; padding:16px; background:linear-gradient(180deg,#ffffff,#e8f4ff);}
+  .msg { max-width:70%; padding:8px 12px; border-radius:14px; margin-bottom:10px; line-height:1.35; box-shadow:0 1px 2px rgba(0,0,0,.15);}
+  .msg.me { background:#d9f0ff; margin-left:auto; border-bottom-right-radius:4px;}
+  .msg.them { background:#fff; border:1px solid #d0e6fb; border-bottom-left-radius:4px;}
+  .msg .from { font-size:11px; font-weight:800; margin-bottom:2px;}
+  .msg.wink { font-size:42px; text-align:center; background:transparent; box-shadow:none; border:none;}
+  #toolbar { display:flex; gap:8px; padding:8px 12px; background:#eef6ff; border-top:1px solid #c6def5; flex-wrap:wrap;}
+  #toolbar button { border:1px solid #0a3d91; background:#fff; border-radius:20px; padding:6px 12px; cursor:pointer; font-weight:700;}
+  #toolbar button:hover { background:#0a3d91; color:#fff;}
+  #toolbar button.trillo { background:#ffde00; border-color:#c9a600;}
+  #inputBar { display:flex; padding:10px; gap:8px; background:#fff;}
+  #inputBar input { flex:1; padding:10px 14px; border-radius:20px; border:1px solid #9ec9f0; outline:none;}
+  #inputBar button { background:#00a2ff; color:#fff; border:none; border-radius:20px; padding:0 18px; font-weight:800; cursor:pointer;}
+  #login { position:fixed; inset:0; background:rgba(5,30,70,.85); display:flex; align-items:center; justify-content:center; z-index:10; padding:16px;}
+  #loginBox { background:#fff; border-radius:16px; padding:28px; max-width:420px; width:100%; text-align:center;}
+  #loginBox input, #loginBox select { width:100%; padding:10px; margin:6px 0; border-radius:8px; border:1px solid #aaa;}
+  #loginBox button { width:100%; padding:12px; margin-top:10px; border:none; border-radius:10px; background:#00a2ff; color:#fff; font-weight:800; font-size:16px; cursor:pointer;}
+  .shake { animation: shake .5s; }
+  @keyframes shake { 0%,100%{transform:translate(0)} 10%{transform:translate(-10px,5px)} 20%{transform:translate(10px,-5px)} 30%{transform:translate(-8px,-5px)} 40%{transform:translate(8px,5px)} 50%{transform:translate(-6px,3px)} 60%{transform:translate(6px,-3px)} 80%{transform:translate(-2px,1px)} }
+  small.hint{color:#555}
+</style>
+</head>
+<body>
+<div id="app" class="">
+  <div id="sidebar">
+    <div id="me">
+      <div class="nick" id="myNick">~ Ospite ~</div>
+      <div class="stato" id="myStato">Online - Torno subito!</div>
+      <div class="musica" id="myMusica">♫ Sto ascoltando: ...</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <input id="editNick" placeholder="Nickname colorato" style="flex:1;padding:6px;border-radius:6px;border:1px solid #aaa">
+        <input id="editStato" placeholder="Stato MSN..." style="flex:1;padding:6px;border-radius:6px;border:1px solid #aaa">
+        <input id="editMusica" placeholder="Cosa stai ascoltando?" style="flex:1;padding:6px;border-radius:6px;border:1px solid #aaa">
+        <button onclick="salvaProfilo()" style="padding:6px 10px;border-radius:6px;cursor:pointer">Salva</button>
+      </div>
+    </div>
+    <div id="contacts"></div>
+  </div>
+  <div id="chatArea">
+    <div id="chatHeader"><span id="chatWith">Seleziona un contatto</span><span>✨ Wizz by MSN spirit</span></div>
+    <div id="messages"></div>
+    <div id="toolbar">
+      <button class="trillo" onclick="mandaTrillo()">🔔 TRILLO!!!</button>
+      <button onclick="mandaWink('😘')">😘 wink</button>
+      <button onclick="mandaWink('💃')">💃 ballo</button>
+      <button onclick="mandaWink('🐷')">🐷 porcellino</button>
+      <button onclick="cambiaTema()">🎨 Tema</button>
+    </div>
+    <div id="inputBar">
+      <input id="txt" placeholder="Scrivi... usa :) :( :D @wizz" onkeydown="if(event.key==='Enter')invia()">
+      <button onclick="invia()">Invia</button>
+    </div>
+  </div>
+</div>
+
+<div id="login">
+  <div id="loginBox">
+    <h2 style="margin:0">👋 Benvenuto su <span style="color:#00a2ff">Wizz</span></h2>
+    <p><small class="hint">Il WhatsApp innovativo con anima MSN.<br>Registrati con numero di telefono.</small></p>
+    <div id="step1">
+      <input id="phone" placeholder="+39 333 123 4567" value="+39 ">
+      <input id="nickInit" placeholder="Scegli nickname MSN (es. xX_DarkAngel_Xx)">
+      <button onclick="richiediCodice()">Ricevi codice via SMS</button>
+    </div>
+    <div id="step2" style="display:none">
+      <p>Ti abbiamo inviato un codice (DEMO: <b id="demoCode">123456</b>)</p>
+      <input id="otp" placeholder="Codice a 6 cifre" maxlength="6">
+      <button onclick="verificaCodice()">Entra in Wizz 🚀</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let io = { nick: "Ospite", stato: "Online", musica: "", phone: "" };
+let current = 0;
+let contacts = [
+  { nome: "Giulia ♡", colore:"#e91e63", stato:"Online - a casa!!", musica:"Vasco Rossi - Albachiara", presence:"online", msgs:[{from:"Giulia ♡",colore:"#e91e63",text:"ciaoooo ti ricordi i trilli?? 😂"}] },
+  { nome: "xX_Marco_Xx", colore:"#0a3d91", stato:"Occupato - sto giocando", musica:"Linkin Park - Numb", presence:"busy", msgs:[] },
+  { nome: "Ale • Non al PC", colore:"#555", stato:"Non al computer 🖥️", musica:"", presence:"away", msgs:[] },
+];
+let demoCode = "123456";
+
+function richiediCodice(){
+  const phone = document.getElementById('phone').value.trim();
+  const nick = document.getElementById('nickInit').value.trim() || "xX_Ospite_Xx";
+  if(phone.length < 6){ alert("Inserisci un numero valido"); return; }
+  io.phone = phone; io.nick = nick;
+  demoCode = String(Math.floor(100000 + Math.random()*900000));
+  document.getElementById('demoCode').innerText = demoCode;
+  document.getElementById('step1').style.display='none';
+  document.getElementById('step2').style.display='block';
+}
+function verificaCodice(){
+  const v = document.getElementById('otp').value.trim();
+  if(v !== demoCode){ alert("Codice errato, riprova. (demo: "+demoCode+")"); return; }
+  document.getElementById('login').style.display='none';
+  salvaProfilo(true);
+  renderContacts(); selectContact(0);
+  addSys("Benvenuto su Wizz! Prova il TRILLO 🔔");
+}
+function salvaProfilo(first){
+  if(!first){
+    io.nick = document.getElementById('editNick').value || io.nick;
+    io.stato = document.getElementById('editStato').value || io.stato;
+    io.musica = document.getElementById('editMusica').value || io.musica;
+  }
+  document.getElementById('myNick').innerHTML = colorNick(io.nick);
+  document.getElementById('myStato').innerText = io.stato + " • " + io.phone;
+  document.getElementById('myMusica').innerText = io.musica ? "♫ Sto ascoltando: " + io.musica : "♫ Sto ascoltando: ...";
+}
+function colorNick(n){
+  let colors=["#e91e63","#0a3d91","#0a7d2c","#ff6600","#7b1fa2"];
+  let c = colors[n.length % colors.length];
+  return `<span style="color:${c}">${escapeHtml(n)}</span>`;
+}
+function escapeHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function emoticon(t){
+  return escapeHtml(t)
+    .replace(/:\)/g,"😊").replace(/:\(/g,"😢").replace(/:D/g,"😁")
+    .replace(/:P/g,"😛").replace(/@wizz/gi,"⚡Wizz⚡")
+    .replace(/<3/g,"❤️");
+}
+function renderContacts(){
+  const div = document.getElementById('contacts'); div.innerHTML="";
+  contacts.forEach((c,i)=>{
+    const d=document.createElement('div'); d.className='contact'+(i===current?' active':'');
+    d.innerHTML=`<div class="dot ${c.presence}"></div><div><b style="color:${c.colore}">${escapeHtml(c.nome)}</b><br><small>${escapeHtml(c.stato)}</small><br><small style="color:#0a7d2c">${c.musica?'♫ '+escapeHtml(c.musica):''}</small></div>`;
+    d.onclick=()=>selectContact(i); div.appendChild(d);
+  });
+}
+function selectContact(i){ current=i; renderContacts(); renderMsgs();
+  document.getElementById('chatWith').innerText = contacts[i].nome + " - " + contacts[i].stato;
+}
+function renderMsgs(){
+  const box=document.getElementById('messages'); box.innerHTML="";
+  contacts[current].msgs.forEach(m=>{
+    if(m.sys){ const p=document.createElement('div'); p.style.cssText="text-align:center;color:#777;font-size:12px;margin:8px"; p.innerText=m.text; box.appendChild(p); return; }
+    const d=document.createElement('div');
+    d.className = 'msg ' + (m.me?'me':'them') + (m.wink?' wink':'');
+    d.innerHTML = m.wink ? `${m.text}` : `<div class="from" style="color:${m.colore||'#333'}">${escapeHtml(m.from)}</div><div>${emoticon(m.text)}</div>`;
+    box.appendChild(d);
+  });
+  box.scrollTop=box.scrollHeight;
+}
+function addSys(t){ contacts[current].msgs.push({sys:true,text:t}); renderMsgs(); }
+function invia(){
+  const inp=document.getElementById('txt'); const t=inp.value.trim(); if(!t) return;
+  contacts[current].msgs.push({from:io.nick,colore:"#0a3d91",text:t,me:true});
+  inp.value=""; renderMsgs();
+  setTimeout(()=>{ // finta risposta MSN nostalgica
+    const risposte=["ahahah mitico!! :)","mandami un trillo dai!!","che canzone stai ascoltando??","questo Wizz spacca, altro che WhatsApp :D","<3 <3"];
+    contacts[current].msgs.push({from:contacts[current].nome,colore:contacts[current].colore,text:risposte[Math.floor(Math.random()*risposte.length)]});
+    renderMsgs();
+  },900);
+}
+function playTrilloSound(){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination); o.type='square'; o.frequency.value=880; g.gain.value=0.15;
+    o.start(); o.frequency.exponentialRampToValueAtTime(220,0.5); o.stop(0.55);
+  }catch(e){}
+}
+function mandaTrillo(){
+  playTrilloSound();
+  const app=document.getElementById('app'); app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake');
+  contacts[current].msgs.push({from:io.nick,colore:"#0a3d91",text:"🔔🔔 TRILLOOO!!! Hai ricevuto un trillo!",me:true});
+  renderMsgs();
+  setTimeout(()=>{ playTrilloSound(); contacts[current].msgs.push({from:contacts[current].nome,colore:contacts[current].colore,text:"EHHH smettila!! :P (trillo di ritorno 🔔)"}); renderMsgs(); },1200);
+}
+function mandaWink(e){ contacts[current].msgs.push({from:io.nick,text:e,me:true,wink:true}); renderMsgs(); }
+let tema=0;
+function cambiaTema(){
+  tema=(tema+1)%3;
+  const m=document.getElementById('messages');
+  if(tema===0) m.style.background="linear-gradient(180deg,#ffffff,#e8f4ff)";
+  if(tema===1) m.style.background="linear-gradient(180deg,#fff8e1,#ffe0b2)";
+  if(tema===2) m.style.background="linear-gradient(180deg,#1a1a2e,#16213e)";
+}
+renderContacts(); renderMsgs();
+</script>
+</body>
+</html>

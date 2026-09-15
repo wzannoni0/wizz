@@ -1,0 +1,24 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+android/app/debug/
+android/app/profile/
+android/app/release/
+*.iml
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Node / Expo (se in futuro aggiungi versione Expo)
+node_modules/
+.expo/
+dist/
+
+# Python localhost
+__pycache__/
