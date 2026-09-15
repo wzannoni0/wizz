@@ -365,7 +365,7 @@ class _HomeShellState extends State<HomeShell> {
             leading: Stack(
               children: [
                 CircleAvatar(
-                  backgroundColor: c.colore.withOpacity(0.15),
+                  backgroundColor: c.colore.withValues(alpha: 0.15),
                   child: Text(c.nome.characters.first,
                       style: TextStyle(
                           color: c.colore, fontWeight: FontWeight.w900)),
@@ -567,10 +567,15 @@ class _ChatScreenState extends State<ChatScreen>
       appBar: AppBar(
         backgroundColor: wizzBlue,
         foregroundColor: Colors.white,
-        title: Text(widget.contact.nome,
-            style: const TextStyle(fontWeight: FontWeight.w800)),
-        subtitle: Text(widget.contact.stato,
-            style: const TextStyle(fontSize: 12, color: Colors.white70)),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.contact.nome,
+                style: const TextStyle(fontWeight: FontWeight.w800)),
+            Text(widget.contact.stato,
+                style: const TextStyle(fontSize: 12, color: Colors.white70)),
+          ],
+        ),
       ),
       body: AnimatedBuilder(
         animation: shakeCtrl,
