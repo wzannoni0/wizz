@@ -4,6 +4,14 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val ksProps = java.util.Properties()
+val ksFile = rootProject.file("key.properties")
+if (ksFile.exists()) ksProps.load(ksFile.inputStream())
+fun ksProp(env: String, file: String): String? =
+    System.getenv(env) ?: ksProps.getProperty(file)
+val ksPath: String? = ksProp("ANDROID_KEYSTORE_FILE", "storeFile")
+val hasReleaseKey = !ksPath.isNullOrBlank()
+
 android {
     namespace = "com.wizz.chat"
     compileSdk = flutter.compileSdkVersion
@@ -29,18 +37,10 @@ android {
         versionName = flutter.versionName
     }
 
-    val ksProps = java.util.Properties()
-    val ksFile = rootProject.file("key.properties")
-    if (ksFile.exists()) ksProps.load(ksFile.inputStream())
-    fun ksProp(env: String, file: String): String? =
-        System.getenv(env) ?: ksProps.getProperty(file)
-    val ksPath = ksProp("ANDROID_KEYSTORE_FILE", "storeFile")
-    val hasReleaseKey = !ksPath.isNullOrBlank()
-
     signingConfigs {
         create("release") {
             if (hasReleaseKey) {
-                storeFile = file(ksPath!!)
+                storeFile = file(ksPath as String)
                 storePassword = ksProp("ANDROID_KEYSTORE_PASSWORD", "storePassword")
                 keyAlias = ksProp("ANDROID_KEY_ALIAS", "keyAlias")
                 keyPassword = ksProp("ANDROID_KEY_PASSWORD", "keyPassword")
