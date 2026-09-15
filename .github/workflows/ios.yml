@@ -1,0 +1,22 @@
+name: iOS Simulator (no signing)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'wizz_app/**'
+      - '.github/workflows/ios.yml'
+  workflow_dispatch:
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: wizz_app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter build ios --simulator --debug --no-codesign
