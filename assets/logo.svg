@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#060D23"/>
+      <stop offset="1" stop-color="#0B2A5E"/>
+    </linearGradient>
+    <linearGradient id="bolt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5EE7FF"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.25" cy="0.05" r="0.65">
+      <stop offset="0" stop-color="#00B4FF" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#00B4FF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="halo" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="0" stdDeviation="26" flood-color="#7C3AED" flood-opacity="0.55"/>
+    </filter>
+    <clipPath id="tile"><rect width="1024" height="1024" rx="230"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+    <rect width="1024" height="1024" fill="url(#glow)"/>
+    <polygon points="578,168 448,548 524,548 476,856 622,498 546,498"
+             fill="url(#bolt)" filter="url(#halo)"/>
+  </g>
+</svg>
